@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<p align="center"><strong>What's wrong with this host?</strong> netdoc tells you — in one command, in one binary, in two seconds.</p>
+<p align="center"><strong>What's wrong with this host?</strong> netdoc tells you — in one command, in one binary, in two seconds (more or less).</p>
 
 <!-- Project status (live) -->
 <p align="center">
