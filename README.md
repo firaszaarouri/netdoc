@@ -36,7 +36,7 @@
 
 ---
 
-`netdoc <host>` runs fourteen deep network-diagnostic checks — DNS, TLS, HTTP, mail, path, ports, reputation, and more — and prints one verdict naming the first thing to fix.
+`netdoc` runs fourteen deep network-diagnostic checks — DNS, TLS, HTTP, mail, path, ports, reputation, and more — and prints one verdict naming the first thing to fix.
 
 It replaces what you used to chain together: `dig + delv + curl + openssl + testssl + sslyze + mtr + nmap + MXToolbox + SSL Labs + Hardenize + internet.nl + DNSViz + whatsmydns + securityheaders + …`. One binary, no `sudo`, no Python runtime, no cloud SaaS, no telemetry.
 
