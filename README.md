@@ -7,22 +7,31 @@
 
 <p align="center"><strong>What's wrong with this host?</strong> netdoc tells you — in one command, in one binary, in two seconds.</p>
 
+<!-- Project status (live) -->
 <p align="center">
-  <a href="https://github.com/firaszaarouri/netdoc/releases"><img alt="Release" src="https://img.shields.io/github/v/release/firaszaarouri/netdoc?style=flat-square"></a>
-  <a href="https://github.com/firaszaarouri/netdoc/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/firaszaarouri/netdoc/ci.yml?style=flat-square"></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
-  <a href="https://goreportcard.com/report/github.com/firaszaarouri/netdoc"><img alt="Go report" src="https://goreportcard.com/badge/github.com/firaszaarouri/netdoc?style=flat-square"></a>
+  <a href="https://github.com/firaszaarouri/netdoc/releases"><img alt="Release" src="https://img.shields.io/github/v/release/firaszaarouri/netdoc?style=flat-square&color=blue&logo=github&logoColor=white"></a>
+  <a href="https://github.com/firaszaarouri/netdoc/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/firaszaarouri/netdoc/ci.yml?style=flat-square&label=CI&logo=githubactions&logoColor=white"></a>
+  <a href="https://goreportcard.com/report/github.com/firaszaarouri/netdoc"><img alt="Go Report" src="https://goreportcard.com/badge/github.com/firaszaarouri/netdoc?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
+  <img alt="Last commit" src="https://img.shields.io/github/last-commit/firaszaarouri/netdoc?style=flat-square&logo=git&logoColor=white">
 </p>
 
+<!-- Tech stack -->
 <p align="center">
-  <img alt="Go" src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat-square&logo=go&logoColor=white">
+  <img alt="Go 1.24+" src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat-square&logo=go&logoColor=white">
   <img alt="Linux" src="https://img.shields.io/badge/Linux-supported-FCC624?style=flat-square&logo=linux&logoColor=black">
   <img alt="macOS" src="https://img.shields.io/badge/macOS-supported-000000?style=flat-square&logo=apple&logoColor=white">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-supported-0078D6?style=flat-square&logo=windows&logoColor=white">
-  <img alt="TLS 1.3" src="https://img.shields.io/badge/TLS-1.3-success?style=flat-square&logo=letsencrypt&logoColor=white">
-  <img alt="HTTP/3" src="https://img.shields.io/badge/HTTP-%2F3-orange?style=flat-square">
-  <img alt="DNSSEC" src="https://img.shields.io/badge/DNSSEC-validated-blueviolet?style=flat-square">
-  <img alt="Zero telemetry" src="https://img.shields.io/badge/telemetry-zero-success?style=flat-square">
+  <a href="https://github.com/firaszaarouri/netdoc/pkgs/container/netdoc"><img alt="Docker" src="https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white"></a>
+</p>
+
+<!-- Features & guarantees -->
+<p align="center">
+  <img alt="TLS 1.3" src="https://img.shields.io/badge/TLS-1.3-43A047?style=flat-square&logo=letsencrypt&logoColor=white">
+  <img alt="HTTP/3 QUIC" src="https://img.shields.io/badge/HTTP%2F3-QUIC-F29111?style=flat-square">
+  <img alt="DNSSEC" src="https://img.shields.io/badge/DNSSEC-validated-7E57C2?style=flat-square">
+  <img alt="Mail DMARC + DANE" src="https://img.shields.io/badge/mail-DMARC%20%2B%20DANE-1565C0?style=flat-square&logo=protonmail&logoColor=white">
+  <img alt="Zero telemetry" src="https://img.shields.io/badge/telemetry-zero-2E7D32?style=flat-square">
 </p>
 
 ---
