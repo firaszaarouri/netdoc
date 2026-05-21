@@ -42,12 +42,18 @@ jobs:
         run: go test -race -v ./...
 
       - name: go build (native)
-        run: go build -o netdoc .
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            go build -o netdoc.exe .
+          else
+            go build -o netdoc .
+          fi
 
       - name: verify binary
         shell: bash
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          if [ "$RUNNER_OS" = "Windows" ]; then
             ./netdoc.exe --version
           else
             ./netdoc --version
