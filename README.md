@@ -495,6 +495,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, the testing ba
 
 Security issues should not be filed as public issues — see [SECURITY.md](SECURITY.md) for the disclosure process.
 
+## Author
+
+**[Firas Zaarouri](https://github.com/firaszaarouri)**
+MSc Data Analytics · MEng General Engineering · PhD Candidate
+LIP6, Sorbonne Université — NPA Team
+
 ## License
 
 [MIT](LICENSE)
