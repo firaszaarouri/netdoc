@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 96" width="360" height="96" role="img" aria-label="netdoc">
+  <title>netdoc</title>
+
+  <!-- Ping rings mark: concentric circles emanating from a center node,
+       echoing the ICMP echo / probe metaphor at the heart of the tool. -->
+  <g transform="translate(48, 48)">
+    <circle cx="0" cy="0" r="34" fill="none" stroke="#06b6d4" stroke-width="1.5"  opacity="0.15"/>
+    <circle cx="0" cy="0" r="24" fill="none" stroke="#06b6d4" stroke-width="1.75" opacity="0.35"/>
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#06b6d4" stroke-width="2"    opacity="0.65"/>
+    <circle cx="0" cy="0" r="5"  fill="#06b6d4"/>
+  </g>
+
+  <!-- Wordmark: bold monospace, slate-900 -->
+  <text x="106" y="62"
+        font-family="ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace"
+        font-size="42" font-weight="700" letter-spacing="-1"
+        fill="#0f172a">netdoc</text>
+</svg>

@@ -1,0 +1,39 @@
+#compdef netdoc
+# zsh completion for netdoc
+#
+# Install: drop into a directory on $fpath (e.g.
+#   ~/.zsh/completions/_netdoc) and `autoload -U compinit && compinit`
+#   in your .zshrc, or use a plugin manager like zinit:
+#     zinit ice as"completion"; zinit snippet /path/to/_netdoc
+#
+# Provides:
+#   - all flags with descriptions
+#   - value completion for --check, --profile, --ports, --dns, --format
+#   - file completion for -f / --file / --diff
+
+_netdoc() {
+    local -a flags
+    flags=(
+        '--json[output structured JSON report]'
+        '--format[output format]:format:(json html md markdown)'
+        '--timeout[per-check timeout]:duration:'
+        '--dns[DNS transport]:transport:(system udp tcp dot doh doq)'
+        '--ports[ports to scan]:ports:(top20 top100 top1000 22 80 443)'
+        '--ecs[EDNS Client-Subnet probe]:cidr:'
+        '--check[run only the named checks]:check:(dns domain delegation tcp latency path tls http security discovery mail reputation ipv6 ports)'
+        '--profile[curated check preset]:profile:(fast web mail full paranoid)'
+        '--diff[compare to baseline JSON]:baseline:_files'
+        '--write-out[scriptable output template]:template:'
+        '--watch[live re-running mode]'
+        '--interval[--watch interval]:duration:'
+        '(-f --file)'{-f,--file}'[targets file]:file:_files'
+        '--concurrency[batch parallelism]:N:'
+        '--history[show last N scans]:N:'
+        '--no-history[skip appending to history]'
+        '--no-color[disable colored output]'
+        '(-v --version)'{-v,--version}'[print version]'
+        '(-h --help)'{-h,--help}'[print help]'
+    )
+    _arguments -s -S $flags '*::target:_hosts'
+}
+_netdoc "$@"

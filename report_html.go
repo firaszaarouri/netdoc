@@ -1,0 +1,159 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"html"
+	"strings"
+)
+
+// HTML report output. Self-contained single-file document — no external
+// CSS, no JS, no fonts to load. Embed-everywhere safe: paste into an
+// email, drop into a wiki, archive in S3, etc. ~5 KB per report.
+//
+// Visual style intentionally minimal: a 700-px content column on a
+// neutral background, monospace for technical values, status-coloured
+// pills for ok/warn/fail/skip. Print-friendly (no dark mode media query;
+// the report is meant to be archived/printed/shared).
+
+// renderHTML returns a single-file HTML rendering of the report,
+// suitable for `netdoc <host> --format html > report.html`.
+func renderHTML(r Report) string {
+	var b strings.Builder
+	statusBadge := func(s string) string {
+		switch s {
+		case StatusOK:
+			return `<span class="pill ok">✓ ok</span>`
+		case StatusWarn:
+			return `<span class="pill warn">! warn</span>`
+		case StatusFail:
+			return `<span class="pill fail">✗ fail</span>`
+		case StatusSkip:
+			return `<span class="pill skip">· skip</span>`
+		}
+		return `<span class="pill">` + html.EscapeString(s) + `</span>`
+	}
+
+	healthBadge := `<span class="pill ok">Healthy</span>`
+	if !r.Healthy {
+		healthBadge = fmt.Sprintf(`<span class="pill fail">%d problem%s</span>`, len(r.Problems), plural(len(r.Problems)))
+	}
+
+	b.WriteString(`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>netdoc — `)
+	b.WriteString(html.EscapeString(r.Host))
+	b.WriteString(`</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; font-family: -apple-system, system-ui, sans-serif; background: #f7f7f7; color: #1a1a1a; }
+  main { max-width: 720px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  h1 { font-size: 1.5rem; margin: 0; }
+  h2 { font-size: 1.05rem; margin: 0; }
+  .wordmark { font-weight: 600; letter-spacing: 0.5px; opacity: 0.6; }
+  .target { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.1rem; }
+  .check { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+  .check-row { display: flex; align-items: baseline; gap: 12px; }
+  .check h2 { flex: 1; }
+  .summary { color: #555; margin-top: 6px; font-size: 0.95rem; }
+  .hint { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; color: #666; margin-top: 10px; white-space: pre-wrap; line-height: 1.45; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+  .pill.ok { background: #dcf5e6; color: #0d6e2b; }
+  .pill.warn { background: #fff3cd; color: #8a6d00; }
+  .pill.fail { background: #fde2e2; color: #b50000; }
+  .pill.skip { background: #e8e8e8; color: #555; }
+  .fix-first { background: #fde2e2; border-left: 3px solid #b50000; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
+  .fix-first strong { color: #b50000; }
+  footer { color: #888; font-size: 0.8rem; text-align: center; margin-top: 32px; }
+  footer a { color: #888; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1a1a1a; color: #e0e0e0; }
+    .check { background: #242424; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .summary { color: #aaa; }
+    .hint { color: #999; }
+    .pill.ok { background: #133621; color: #6fce99; }
+    .pill.warn { background: #3a2d05; color: #d4b35c; }
+    .pill.fail { background: #3a0e0e; color: #f08585; }
+    .pill.skip { background: #2c2c2c; color: #aaa; }
+    .fix-first { background: #3a0e0e; border-left-color: #f08585; }
+    .fix-first strong { color: #f08585; }
+  }
+  @media print {
+    body { background: white; color: black; padding: 12px; }
+    .check { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>netdoc report</h1>
+      <div class="target">`)
+	b.WriteString(html.EscapeString(r.Target))
+	b.WriteString(`</div>
+    </div>
+    `)
+	b.WriteString(healthBadge)
+	b.WriteString(`
+  </header>
+`)
+
+	if !r.Healthy && r.FixFirst != "" {
+		b.WriteString(`  <div class="fix-first"><strong>Fix first:</strong> `)
+		b.WriteString(html.EscapeString(r.FixFirst))
+		b.WriteString("</div>\n")
+	}
+
+	for _, c := range r.Checks {
+		b.WriteString(`  <div class="check">
+    <div class="check-row">
+      <h2>`)
+		b.WriteString(html.EscapeString(c.Name))
+		b.WriteString(`</h2>
+      `)
+		b.WriteString(statusBadge(c.Status))
+		b.WriteString(`
+    </div>
+    <div class="summary">`)
+		b.WriteString(html.EscapeString(c.Summary))
+		b.WriteString(`</div>
+`)
+		if c.Hint != "" {
+			b.WriteString(`    <div class="hint">`)
+			b.WriteString(html.EscapeString(c.Hint))
+			b.WriteString("</div>\n")
+		}
+		b.WriteString("  </div>\n")
+	}
+
+	b.WriteString(`  <footer>
+    Generated by netdoc `)
+	b.WriteString(html.EscapeString(version))
+	b.WriteString(` · elapsed `)
+	b.WriteString(html.EscapeString(r.Elapsed))
+	b.WriteString(`
+  </footer>
+</main>
+</body>
+</html>
+`)
+	return b.String()
+}
+
+// jsonInline returns a compact one-line JSON encoding of v, useful when
+// embedding small structures in HTML/markdown reports. Not currently
+// referenced by renderHTML directly, exported for use by future
+// per-detail expanders.
+func jsonInline(v any) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
+}

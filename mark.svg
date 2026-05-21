@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="netdoc">
+  <title>netdoc</title>
+
+  <!-- Mark only — for favicons, app icons, social cards. -->
+  <g transform="translate(48, 48)">
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#06b6d4" stroke-width="2"   opacity="0.15"/>
+    <circle cx="0" cy="0" r="28" fill="none" stroke="#06b6d4" stroke-width="2.5" opacity="0.35"/>
+    <circle cx="0" cy="0" r="16" fill="none" stroke="#06b6d4" stroke-width="3"   opacity="0.65"/>
+    <circle cx="0" cy="0" r="6"  fill="#06b6d4"/>
+  </g>
+</svg>

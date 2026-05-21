@@ -1,0 +1,90 @@
+name: CI
+
+# Runs build + vet + test on every push and PR. Cross-compiles for all
+# three target platforms to catch platform-specific regressions early
+# (e.g., the IP_RECVERR code is Linux-only and would break a naive
+# all-platforms build without the //go:build linux tag).
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: build & test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: go mod download
+        run: go mod download
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test
+        run: go test -race -v ./...
+
+      - name: go build (native)
+        run: go build -o netdoc .
+
+      - name: verify binary
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            ./netdoc.exe --version
+          else
+            ./netdoc --version
+          fi
+
+  cross-compile:
+    name: cross-compile (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: linux,   goarch: amd64 }
+          - { goos: linux,   goarch: arm64 }
+          - { goos: darwin,  goarch: amd64 }
+          - { goos: darwin,  goarch: arm64 }
+          - { goos: windows, goarch: amd64 }
+          - { goos: windows, goarch: arm64 }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: build ${{ matrix.goos }}/${{ matrix.goarch }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: go build -trimpath -ldflags '-s -w' -o /tmp/netdoc-${{ matrix.goos }}-${{ matrix.goarch }} .
+
+      - name: vet ${{ matrix.goos }}/${{ matrix.goarch }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go vet ./...

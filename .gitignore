@@ -1,0 +1,13 @@
+# Binaries
+netdoc
+netdoc.exe
+/dist/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local config
+*.local.json

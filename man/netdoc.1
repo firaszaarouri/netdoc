@@ -1,0 +1,233 @@
+.\" Manpage for netdoc.
+.\" Install: cp netdoc.1 /usr/local/share/man/man1/ && mandb
+.TH NETDOC 1 "2026-05-21" "netdoc 1.0.0" "Network Diagnostic"
+.SH NAME
+netdoc \- single-binary network diagnostic, 14 deep checks per host
+.SH SYNOPSIS
+.B netdoc
+.RI [ host | URL ]
+.RI [ flags ]
+.br
+.B netdoc \-f
+.I targets.txt
+.RI [ flags ]
+.br
+.B netdoc
+.I host
+.B \-\-history
+.RI [ N ]
+.SH DESCRIPTION
+.B netdoc
+runs 14 deep network-diagnostic checks against a host in one command and produces a plain-language verdict naming the first thing to fix.
+It combines, in a single unprivileged process, the depth of
+.BR dig (1),
+.BR delv (1),
+.BR mtr (1),
+.BR traceroute (1),
+.BR curl (1),
+.BR openssl (1) " s_client,"
+.BR testssl.sh (1),
+.BR sslyze (1),
+.BR nmap (1)
+(single-target),
+SSL Labs, securityheaders.com, Hardenize, internet.nl, DNSViz, MXToolbox, and whatsmydns.net.
+.PP
+Distinguishing features:
+.IP \(bu 2
+Single unprivileged binary. No sudo, no setcap, no Administrator. Cross-platform (Linux, macOS, Windows).
+.IP \(bu 2
+Bit-accurate TLS 1.3 0-RTT detection via a hand-rolled handshake parsing the raw NewSessionTicket early_data.max_early_data_size field.
+.IP \(bu 2
+Unprivileged ECMP-aware path discovery on Linux via IP_RECVERR socket error queue (IPv4 TCP-source-port, IPv4 UDP, IPv6 flow-label).
+.IP \(bu 2
+nmap -sU-class UDP open/closed/filtered classification on Linux.
+.IP \(bu 2
+Zero telemetry. No third-party API calls, no cloud SaaS, no usage tracking.
+.SH OPTIONS
+.TP
+.B \-\-json
+Emit a structured JSON report. Forces no-color.
+.TP
+.BI \-\-format " fmt"
+Output format. One of:
+.BR json " | " html " | " md " | " markdown .
+.TP
+.BI \-\-timeout " duration"
+Per-check timeout (default
+.IR 5s ).
+Accepts Go-style duration strings (e.g.
+.IR 30s ,
+.IR 2m ).
+.TP
+.BI \-\-dns " spec"
+DNS transport.
+.IR spec " is one of " system " (default), " udp ", " tcp ", " dot ", " doh ", " doq ,
+optionally followed by
+.IR :server .
+Example:
+.IR dot:1.1.1.1 ", " doh:https://cloudflare-dns.com/dns-query ", " doq:dns.quad9.net .
+.TP
+.BI \-\-ports " spec"
+Scan the given ports.
+.I spec
+is a comma-separated list (e.g.
+.IR 22,80,443 ),
+range (e.g.
+.IR 1-1024 ),
+or one of the presets
+.IR top20 ", " top100 ", " top1000 .
+Open ports are banner-grabbed (SSH/SMTP/...) or actively probed (10 protocols including SSH/LDAP/PG/Redis/ES/Memcached/Mongo/NTP/DNS/SMB2/Telnet/RDP).
+.TP
+.BI \-\-ecs " [cidr]"
+EDNS Client-Subnet probe. Pass a CIDR (or comma-separated list of CIDRs), or no argument for the default 5-continent bouquet (US/DE/JP/BR/AU).
+.TP
+.BI \-\-check " list"
+Run only the named checks (comma-separated). Valid: dns, domain, delegation, tcp, latency, path, tls, http, security, discovery, mail, reputation, ipv6, ports.
+.TP
+.BI \-\-profile " name"
+Use a curated check preset:
+.IR fast " (sub-second snapshot: dns + tcp + tls + http), "
+.IR web " (skip mail/reputation), "
+.IR mail " (mail-server focus), "
+.IR full " (everything except ports), "
+.IR paranoid " (everything)."
+The
+.B \-\-check
+flag overrides
+.B \-\-profile
+when both are set.
+.TP
+.BI \-\-diff " baseline.json"
+Compare current scan to a stored baseline. Exit code 1 on any drift.
+.TP
+.BI \-\-write-out " template"
+curl-style scriptable output template with 35+ variables (${time_total}, ${grade}, ${jarm}, ...). Suppresses normal output.
+.TP
+.B \-\-watch
+Live mode: re-run every check on an interval, redraw in place. Default 5s interval.
+.TP
+.BI \-\-interval " duration"
+Set the
+.B \-\-watch
+interval explicitly.
+.TP
+.BI \-f " path" ", " \-\-file " path"
+Batch mode: read newline-delimited targets from
+.IR path .
+Blank lines and # comments are ignored. Pass
+.I -
+to read from stdin.
+.TP
+.BI \-\-concurrency " N"
+Batch parallelism. Default 8.
+.TP
+.BI \-\-history " [N]"
+Display the last N (default 10) scans for the given target from ~/.netdoc/history.jsonl.
+.TP
+.B \-\-no-history
+Skip appending this scan to ~/.netdoc/history.jsonl.
+.TP
+.B \-\-no-color
+Disable colored output.
+.TP
+.B \-v ", " \-\-version
+Print version and exit.
+.TP
+.B \-h ", " \-\-help
+Print help and exit.
+.SH EXIT STATUS
+.TP
+.B 0
+Healthy: every check passed.
+.TP
+.B 1
+At least one check failed, OR
+.B \-\-diff
+detected drift from baseline, OR batch mode found any unhealthy target.
+.TP
+.B 2
+Usage error: unrecognized flag, malformed argument, missing target.
+.SH EXAMPLES
+.PP
+Single-target scan:
+.PP
+.RS
+.EX
+$ netdoc github.com
+.EE
+.RE
+.PP
+Bit-accurate 0-RTT check:
+.PP
+.RS
+.EX
+$ netdoc www.cloudflare.com --json | jq '.checks[]|select(.name=="TLS").detail.zero_rtt'
+.EE
+.RE
+.PP
+Batch mode against a fleet:
+.PP
+.RS
+.EX
+$ netdoc -f targets.txt --profile fast --concurrency 16
+.EE
+.RE
+.PP
+Generate a Markdown report for an issue tracker:
+.PP
+.RS
+.EX
+$ netdoc api.example.com --format md > report.md
+.EE
+.RE
+.PP
+Show drift across recent scans:
+.PP
+.RS
+.EX
+$ netdoc github.com --history 20
+.EE
+.RE
+.SH FILES
+.TP
+.I ~/.netdoc/history.jsonl
+Per-scan JSONL history. Append-only. Each line is one
+.B historyRecord
+JSON object (timestamp, target, healthy, fix_first, report).
+.TP
+.I $NETDOC_HISTORY
+Override path for the history file (used by tests and per-tenant separation).
+.SH ENVIRONMENT
+.TP
+.B NO_COLOR
+When set, disables colored output (same as
+.BR \-\-no-color ).
+.TP
+.B NETDOC_HISTORY
+Override the default history.jsonl path.
+.SH BRAND PROMISES
+.IP \(bu 2
+Unprivileged-by-default. Features that genuinely need raw sockets are
+.B stubbed
+on the affected platform, not silently degraded.
+.IP \(bu 2
+Single binary. No external runtime dependencies.
+.IP \(bu 2
+Zero telemetry, zero SaaS, zero API keys. Everything runs locally.
+.IP \(bu 2
+Bit-accurate where possible. Cryptographic primitives are cross-verified against RFC test vectors (RFC 8448, RFC 5246).
+.IP \(bu 2
+No vuln-scanner creep, no headless browser, no subdomain enumeration. Diagnostic tool, not pentest framework.
+.SH SEE ALSO
+.BR dig (1),
+.BR mtr (1),
+.BR traceroute (1),
+.BR curl (1),
+.BR nmap (1),
+.BR openssl (1)
+.PP
+Full documentation:
+.UR https://github.com/firaszaarouri/netdoc
+.UE
+.SH AUTHOR
+The netdoc contributors. License: MIT.
