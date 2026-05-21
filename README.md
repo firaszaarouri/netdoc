@@ -14,6 +14,17 @@
   <a href="https://goreportcard.com/report/github.com/firaszaarouri/netdoc"><img alt="Go report" src="https://goreportcard.com/badge/github.com/firaszaarouri/netdoc?style=flat-square"></a>
 </p>
 
+<p align="center">
+  <img alt="Go" src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat-square&logo=go&logoColor=white">
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-supported-FCC624?style=flat-square&logo=linux&logoColor=black">
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-supported-000000?style=flat-square&logo=apple&logoColor=white">
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-supported-0078D6?style=flat-square&logo=windows&logoColor=white">
+  <img alt="TLS 1.3" src="https://img.shields.io/badge/TLS-1.3-success?style=flat-square&logo=letsencrypt&logoColor=white">
+  <img alt="HTTP/3" src="https://img.shields.io/badge/HTTP-%2F3-orange?style=flat-square">
+  <img alt="DNSSEC" src="https://img.shields.io/badge/DNSSEC-validated-blueviolet?style=flat-square">
+  <img alt="Zero telemetry" src="https://img.shields.io/badge/telemetry-zero-success?style=flat-square">
+</p>
+
 ---
 
 `netdoc <host>` runs fourteen deep network-diagnostic checks — DNS, TLS, HTTP, mail, path, ports, reputation, and more — and prints one verdict naming the first thing to fix.
