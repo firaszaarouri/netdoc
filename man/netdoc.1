@@ -52,6 +52,15 @@ Emit a structured JSON report. Forces no-color.
 Output format. One of:
 .BR json " | " html " | " md " | " markdown .
 .TP
+.BI \-o ", " \-\-output " file"
+Write the report to
+.I file
+instead of standard output. If
+.B \-\-format
+is omitted the format is inferred from the file extension
+.RI ( .html ", " .md ", " .json ).
+Writing the file directly avoids the UTF-8 corruption that shell pipes cause on Windows PowerShell.
+.TP
 .BI \-\-timeout " duration"
 Per-check timeout (default
 .IR 5s ).

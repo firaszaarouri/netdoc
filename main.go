@@ -36,6 +36,7 @@ func main() {
 	batchConcurrency := 8
 	noHistory := false
 	var reportFormat string
+	var outputFile string
 	dnssecTreeFlag := false
 	eachCipherFlag := false
 
@@ -199,6 +200,16 @@ func main() {
 			}
 		case strings.HasPrefix(a, "--format="):
 			reportFormat = strings.TrimPrefix(a, "--format=")
+		case a == "--output" || a == "-o":
+			// Write report output to a file directly (via Go file I/O),
+			// bypassing the shell pipeline. This avoids the UTF-8 mangling
+			// that PowerShell's `|` / `>` inflict on non-ASCII glyphs.
+			if i+1 < len(args) {
+				i++
+				outputFile = args[i]
+			}
+		case strings.HasPrefix(a, "--output="):
+			outputFile = strings.TrimPrefix(a, "--output=")
 		case a == "--dnssec-tree":
 			// ASCII chain visualizer in the DNS check's hint. Lock-in vs DNSViz.
 			dnssecTreeFlag = true
@@ -378,6 +389,19 @@ func main() {
 		_ = appendHistory(report)
 	}
 
+	// --output with a recognised extension implies the format, so
+	// `netdoc host --output report.html` works without a separate --format.
+	if outputFile != "" && reportFormat == "" && !jsonOut {
+		switch {
+		case strings.HasSuffix(outputFile, ".html"), strings.HasSuffix(outputFile, ".htm"):
+			reportFormat = "html"
+		case strings.HasSuffix(outputFile, ".md"), strings.HasSuffix(outputFile, ".markdown"):
+			reportFormat = "md"
+		case strings.HasSuffix(outputFile, ".json"):
+			jsonOut = true
+		}
+	}
+
 	switch {
 	case diffBaseline != "":
 		baseline, err := loadBaseline(diffBaseline)
@@ -395,16 +419,16 @@ func main() {
 		// goes to stdout. The exit code still reflects health.
 		fmt.Print(runWriteOut(writeOutTemplate, &report, exitCode))
 	case reportFormat == "html":
-		fmt.Print(renderHTML(report))
+		emitReport(renderHTML(report), outputFile)
 	case reportFormat == "md" || reportFormat == "markdown":
-		fmt.Print(renderMarkdown(report))
+		emitReport(renderMarkdown(report), outputFile)
 	case jsonOut:
 		b, err := json.MarshalIndent(report, "", "  ")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "netdoc: "+err.Error())
 			os.Exit(2)
 		}
-		fmt.Println(string(b))
+		emitReport(string(b)+"\n", outputFile)
 	default:
 		renderTerminal(report)
 	}
@@ -502,6 +526,24 @@ func parseTarget(arg string) (host string, port int, scheme string, err error) {
 	return host, port, scheme, nil
 }
 
+// emitReport writes formatted output to the --output file when set,
+// otherwise to stdout. Writing the file directly with os.WriteFile is the
+// reliable way to preserve UTF-8 on Windows: piping a native command
+// through PowerShell's `|` or `>` re-encodes the bytes via the console
+// code page (CP1252/CP850), mangling the · / — / ✓ glyphs. Go's file I/O
+// bypasses the shell entirely.
+func emitReport(content, outputFile string) {
+	if outputFile == "" {
+		fmt.Print(content)
+		return
+	}
+	if err := os.WriteFile(outputFile, []byte(content), 0o644); err != nil {
+		fmt.Fprintln(os.Stderr, "netdoc: --output: "+err.Error())
+		os.Exit(2)
+	}
+	fmt.Fprintln(os.Stderr, "netdoc: wrote "+outputFile)
+}
+
 func printUsage() {
 	fmt.Println()
 	renderBanner(helpInfo())
@@ -518,6 +560,10 @@ EXAMPLES:
 FLAGS:
   --json            output a structured JSON report
   --format <fmt>    output format: json | html | md / markdown
+  -o, --output <f>  write the report to a file instead of stdout. Format is
+                    inferred from the extension (.html/.md/.json) if --format
+                    isn't given. Avoids the UTF-8 mangling that shell pipes
+                    cause on Windows PowerShell.
   --timeout <dur>   per-check timeout (default 5s), e.g. --timeout 10s
   --dns <spec>      DNS transport: system (default), udp, tcp, dot, doh, doq.
                     Optionally followed by ":server", e.g. dot:1.1.1.1,
@@ -601,6 +647,7 @@ func printFlagList() {
 		"--json",
 		"--no-color",
 		"--no-history",
+		"--output",
 		"--ports",
 		"--profile",
 		"--starttls",
@@ -610,6 +657,7 @@ func printFlagList() {
 		"--write-out",
 		"-f",
 		"-h",
+		"-o",
 		"-t",
 		"-v",
 	}

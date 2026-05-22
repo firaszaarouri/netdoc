@@ -11,3 +11,8 @@ Thumbs.db
 
 # Local config
 *.local.json
+
+# Report artifacts (netdoc --output / --format html|md)
+*.html
+/*-report.*
+/report.*

@@ -352,6 +352,7 @@ If you currently chain any of these together, netdoc covers the same ground in o
 |---|---|
 | `--json` | structured JSON report covering every check + every detail field |
 | `--format <fmt>` | output format: `json` / `html` / `md` / `markdown` |
+| `-o, --output <file>` | write the report to a file directly (format inferred from `.html` / `.md` / `.json` extension if `--format` omitted). Bypasses shell pipes — the reliable way to get clean UTF-8 output on Windows PowerShell. |
 | `--timeout <dur>` | per-check timeout, default `5s` |
 | `--dns <spec>` | DNS transport: `system` (default) / `udp` / `tcp` / `dot` / `doh` / `doq`, optionally followed by `:server` (e.g. `dot:1.1.1.1`) |
 | `--ports <spec>` | comma-separated ports, range `1-1024`, or presets `top20` / `top100` / `top1000` |
@@ -403,6 +404,16 @@ The same data is available in five rendering modes:
 | **Markdown** | `--format md` | paste into a GitHub issue, PR, or runbook |
 | **`--write-out`** | `--write-out '<tpl>'` | curl-style scriptable template with 35+ variables |
 | **`--watch`** | `--watch` | live mode, redrawn in place, with sparkline ring buffers |
+
+Use `-o / --output` to write the report straight to a file:
+
+```bash
+netdoc github.com --output report.html      # format inferred from extension
+netdoc github.com -o report.md
+netdoc github.com -o report.json
+```
+
+This writes the file via Go's I/O, not the shell, so the UTF-8 glyphs (`✓ · — ×`) survive intact — relevant on **Windows PowerShell**, where `netdoc ... --format html > report.html` corrupts non-ASCII characters because the pipeline re-encodes through the console code page. `--output` sidesteps that entirely.
 
 ## FAQ
 
